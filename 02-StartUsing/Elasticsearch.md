@@ -181,7 +181,7 @@ docker run -e ES_JAVA_OPTS="-Xms256m -Xmx256m" -d -v D:/tools/docker/elasticsear
 ip         heap.percent ram.percent cpu load_1m load_5m load_15m node.role master name
 172.17.0.2           34          95   3    0.69    0.50     0.20 dim       *      master
 172.17.0.4           49          95   3    0.69    0.50     0.20 di        -      slave1
-172.17.0.3           48          95   3    0.69    0.50     0.20 di        -      slave1
+172.17.0.3           48          95   3    0.69    0.50     0.20 di        -      slave2
 ```
 
 * Docker集群就OK了
@@ -197,6 +197,283 @@ docker run -d --name es-head -p 9100:9100 mobz/elasticsearch-head:5
 ```
 
 等一会启动成功浏览器查看: [http://127.0.0.1:9100](http://127.0.0.1:9100)，把连接地址改成[http://localhost:9500](http://localhost:9500)，点击连接即可，连接成功，可以看到三个节点的集群信息，就这样Elasticsearch-Head就安装成功了
+
+
+#### Docker下Elasticsearch的IK分词插件的安装
+
+直接去Github的Releases下载自己ES对应的版本: [https://github.com/medcl/elasticsearch-analysis-ik/releases](https://github.com/medcl/elasticsearch-analysis-ik/releases)
+
+这里我们下载7.3: [https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v7.3.0/elasticsearch-analysis-ik-7.3.0.zip](https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v7.3.0/elasticsearch-analysis-ik-7.3.0.zip)
+
+下载下来放到我们对应的每个ES映射目录data下，解压为一个文件夹，启动Docker，启动ES容器，进去ES容器
+
+```
+docker exec -it es bash
+```
+
+进去data目录，查看文件，可以看到是和我们主机对应的目录，然后我们把解压的这个elasticsearch-analysis-ik-7.3.0文件夹移动到上一层的plugins目录下即可
+
+```
+PS C:\WINDOWS\system32> docker exec -it es bash
+[root@a563ff91196d elasticsearch]# ls
+LICENSE.txt  NOTICE.txt  README.textile  bin  config  data  jdk  lib  logs  modules  plugins
+[root@a563ff91196d elasticsearch]# cd data
+[root@a563ff91196d data]# ls
+elasticsearch-analysis-ik-7.3.0  elasticsearch-analysis-ik-7.3.0.zip  nodes
+[root@a563ff91196d data]#
+```
+
+```
+[root@a563ff91196d data]# ls
+elasticsearch-analysis-ik-7.3.0  elasticsearch-analysis-ik-7.3.0.zip  nodes
+[root@a563ff91196d data]# mv elasticsearch-analysis-ik-7.3.0 ../plugins
+[root@a563ff91196d data]# ls
+elasticsearch-analysis-ik-7.3.0.zip  nodes
+[root@a563ff91196d data]# cd ..
+[root@a563ff91196d elasticsearch]# ls
+LICENSE.txt  NOTICE.txt  README.textile  bin  config  data  jdk  lib  logs  modules  plugins
+[root@a563ff91196d elasticsearch]# cd plugins/
+[root@a563ff91196d plugins]# ls
+elasticsearch-analysis-ik-7.3.0
+```
+
+这样就OK了，我们再使用命令exit退出，再docker restart es重启容器
+
+```
+[root@a563ff91196d plugins]# ls
+elasticsearch-analysis-ik-7.3.0
+[root@a563ff91196d plugins]# exit
+exit
+PS C:\WINDOWS\system32> docker restart es
+es
+PS C:\WINDOWS\system32>
+```
+
+也可以docker logs -f es查看下启动日志
+
+测试下IK分词插件OK了没
+
+```
+POST /_analyze
+{
+  "text":"中华人民共和国国徽",
+  "analyzer":"ik_smart"
+}
+```
+
+返回
+
+```
+{
+	"tokens": [
+		{
+			"token": "中华人民共和国",
+			"start_offset": 0,
+			"end_offset": 7,
+			"type": "CN_WORD",
+			"position": 0
+		},
+		{
+			"token": "国徽",
+			"start_offset": 7,
+			"end_offset": 9,
+			"type": "CN_WORD",
+			"position": 1
+		}
+	]
+}
+```
+
+#### Docker下Elasticsearch的拼音分词插件的安装
+
+和IK安装类似，直接去Github的Releases下载自己ES对应的版本: [https://github.com/medcl/elasticsearch-analysis-pinyin/releases](https://github.com/medcl/elasticsearch-analysis-pinyin/releases)
+
+这里我们下载7.3: [https://github.com/medcl/elasticsearch-analysis-pinyin/releases/download/v7.3.0/elasticsearch-analysis-pinyin-7.3.0.zip](https://github.com/medcl/elasticsearch-analysis-pinyin/releases/download/v7.3.0/elasticsearch-analysis-pinyin-7.3.0.zip)
+
+操作类似，下载下来放到我们对应的每个ES映射目录data下，解压为一个文件夹，启动Docker，启动ES容器，进去ES容器，然后我们把解压的这个elasticsearch-analysis-pinyin-7.3.0文件夹移动到上一层的plugins目录下即可，这样就OK了，我们再使用命令exit退出，再docker restart es重启容器
+
+然后测试一下
+
+```
+POST /_analyze
+{
+  "text":"中华人民共和国国徽",
+  "analyzer":"pinyin"
+}
+```
+
+返回
+
+```
+{
+	"tokens": [
+		{
+			"token": "zhong",
+			"start_offset": 0,
+			"end_offset": 0,
+			"type": "word",
+			"position": 0
+		},
+		{
+			"token": "zhrmghggh",
+			"start_offset": 0,
+			"end_offset": 0,
+			"type": "word",
+			"position": 0
+		},
+		{
+			"token": "hua",
+			"start_offset": 0,
+			"end_offset": 0,
+			"type": "word",
+			"position": 1
+		},
+		{
+			"token": "ren",
+			"start_offset": 0,
+			"end_offset": 0,
+			"type": "word",
+			"position": 2
+		},
+		{
+			"token": "min",
+			"start_offset": 0,
+			"end_offset": 0,
+			"type": "word",
+			"position": 3
+		},
+		{
+			"token": "gong",
+			"start_offset": 0,
+			"end_offset": 0,
+			"type": "word",
+			"position": 4
+		},
+		{
+			"token": "he",
+			"start_offset": 0,
+			"end_offset": 0,
+			"type": "word",
+			"position": 5
+		},
+		{
+			"token": "guo",
+			"start_offset": 0,
+			"end_offset": 0,
+			"type": "word",
+			"position": 6
+		},
+		{
+			"token": "guo",
+			"start_offset": 0,
+			"end_offset": 0,
+			"type": "word",
+			"position": 7
+		},
+		{
+			"token": "hui",
+			"start_offset": 0,
+			"end_offset": 0,
+			"type": "word",
+			"position": 8
+		}
+	]
+}
+```
+
+#### 使用IK和拼音分词插件(详细使用可以查看Github的文档)
+
+* 创建Index，拼音分词过滤
+
+```
+PUT /book
+{
+	"settings": {
+		"analysis": {
+			"analyzer": {
+				"pinyin_analyzer": {
+					"tokenizer": "my_pinyin"
+				}
+			},
+			"tokenizer": {
+				"my_pinyin": {
+					"type": "pinyin",
+					"keep_separate_first_letter": false,
+					"keep_full_pinyin": true,
+					"keep_original": true,
+					"limit_first_letter_length": 16,
+					"lowercase": true,
+					"remove_duplicated_term": true
+				}
+			}
+		}
+	}
+}
+```
+
+返回
+
+```
+{
+    "acknowledged": true,
+    "shards_acknowledged": true,
+    "index": "book"
+}
+```
+
+* 创建Mapping，属性使用过滤，name开启拼音分词，content开启IK分词，describe开启拼音加IK分词
+
+```
+POST /book/_mapping
+{
+	"properties": {
+		"name": {
+			"type": "keyword",
+			"fields": {
+				"pinyin": {
+					"type": "text",
+					"store": false,
+					"term_vector": "with_offsets",
+					"analyzer": "pinyin_analyzer",
+					"boost": 10
+				}
+			}
+		},
+		"content": {
+			"type": "text",
+			"analyzer": "ik_max_word",
+			"search_analyzer": "ik_smart"
+		},
+		"describe": {
+			"type": "text",
+			"analyzer": "ik_max_word",
+			"search_analyzer": "ik_smart",
+			"fields": {
+				"pinyin": {
+					"type": "text",
+					"store": false,
+					"term_vector": "with_offsets",
+					"analyzer": "pinyin_analyzer",
+					"boost": 10
+				}
+			}
+		},
+		"id": {
+			"type": "long"
+		}
+	}
+}
+```
+
+返回
+
+```
+{
+    "acknowledged": true
+}
+```
+
+这样Index以及属性分词就开启了
 
 #### 搭建参考
 
