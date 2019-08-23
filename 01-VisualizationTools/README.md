@@ -4,9 +4,9 @@
 
 #### 项目目录
 
-##### Rancher的安装使用: []()
+##### Rancher的安装使用: [https://github.com/dolyw/DockerStudy/blob/master/01-VisualizationTools/Rancher.md](https://github.com/dolyw/DockerStudy/blob/master/01-VisualizationTools/Rancher.md)
 
-##### Portainer的安装使用: []()
+##### Portainer的安装使用: [https://github.com/dolyw/DockerStudy/blob/master/01-VisualizationTools/Portainer.md](https://github.com/dolyw/DockerStudy/blob/master/01-VisualizationTools/Portainer.md)
 
 #### Docker的界面可视化
 
@@ -16,7 +16,7 @@
 
 而市面上的可视化管理工具也是很多的，各有优缺点，就DockerUI、Shipyard、Rancher、Portainer做一下对比
 
-#### DockerUI
+#### (一)DockerUI
 
 **优点**
 
@@ -32,7 +32,7 @@
 
 * Web管理平台无登陆认证机制，考虑到使用过程中人员管理、权限管理等因素，很难留用，故弃之，个人临时使用可以
 
-#### Shipyard
+#### (二)Shipyard
 
 **优点**
 
@@ -53,7 +53,7 @@
 
 * Shipyard整个功能强大，能够满足使用，但镜像很大，消耗资源较大，而且2016年已停止维护，后期使用过程中出现问题，难以把控
 
-#### Rancher
+#### (三)Rancher
 
 **优点**
 
@@ -69,7 +69,7 @@
 
 * 镜像管理功能薄弱，无镜像导入、导出功能，镜像只能通过镜像库获取。如无镜像导入、导出需求，可作为不二之选
 
-#### Portainer
+#### (四)Portainer
 
 **优点**
 
@@ -87,5 +87,9 @@
 **结论**
 
 * Portainer功能完善，目前持续维护更新，最终我选择了它，作为Docker管理工具
+
+#### 搭建参考
+
+1. 感谢xcbeyond的Docker可视化管理工具对比(DockerUI、Shipyard、Rancher、Portainer): [https://blog.csdn.net/xcbeyond/article/details/82859903](https://blog.csdn.net/xcbeyond/article/details/82859903)
 
 
